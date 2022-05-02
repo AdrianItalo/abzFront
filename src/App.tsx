@@ -1,111 +1,106 @@
-﻿import React, { useState } from "react";
+﻿import JqxButton from "jqwidgets-scripts/jqwidgets-react-tsx/jqxbuttons";
 import JqxGrid, { jqx } from "jqwidgets-scripts/jqwidgets-react-tsx/jqxgrid";
-import JqxInput from "jqwidgets-scripts/jqwidgets-react-tsx/jqxinput";
-import "jqwidgets-scripts/jqwidgets/styles/jqx.base.css";
-import "jqwidgets-scripts/jqwidgets/styles/jqx.material.css";
-import { generatedata } from "./generatedata";
-import JqxButton from "jqwidgets-scripts/jqwidgets-react-tsx/jqxbuttons";
+import React, { useState } from "react";
+import { generateData } from "./generatedata";
 
-const MyGrid: React.FC = () => {
-  const myGrid = React.createRef<JqxGrid>();
-  const [data, setUser] = useState(generatedata(100));
-  const [typee,setType] = useState('array')
-  const source: any = {
-    datafields: [
-        { name: 'firstname', type: 'string' },
-        { name: 'productname', type: 'string' },
-    ],
-    datatype: typee,
-    localdata: data
 
-  };
-  
-  const adapter = new jqx.dataAdapter(source);
+import './App.css';
+const MyGrid = () => {
 
-  const exportar = () => {
-      //console.log('')
-      myGrid.current!.exportdata('xls','archivo')
+    const myGrid = React.createRef<JqxGrid>();
+
+    const source = {
+        datafields: [
+            { name: 'name', type: 'string' },
+            { name: 'productname', type: 'string' },
+        ],
+        datatype: 'array',
+        localdata: generateData(100)
+
+    };
+
+    const source2 = {
+        datafields: [
+            { name: 'name', type: 'string' },
+            { name: 'productname', type: 'string' },
+        ],
+        url:'http://127.0.0.1:3333/leer',
+        datatype:'json'
+    }      
     
-  }
+    const adapter = new jqx.dataAdapter(source);
+    const adapter2 = new jqx.dataAdapter(source2);
+    
+    const exportar = () => {
+        myGrid.current!.exportdata('xls','archivo')
+    }
+        
+    const subir = ( ) => {
 
-  const [subir,setSubir] = useState({
-      archivo : '',
-      subido: 0
-  })
+        setAdap(adapter2)
+    }
 
-  const modificar = async () => {
+    const [adap,setAdap] = useState(adapter)
 
-      //console.log("Modificar data")
-      const data = await fetch('http://127.0.0.1:3333/archivo')//a partir del excel subido, leemos los datos
-      
+    const cargar =  async (event) => {
+        const newData = new FormData();
+        const data = event.target.files[0]
+        newData.append("excel",data)
+        //console.log(data)
+        const resp = await fetch('http://127.0.0.1:3333/upload',{
+            method: "POST",
+            body: newData
+        }).then(resp => resp.json())
+        //console.log(resp)
+        //alert(JSON.stringify(resp))
 
-
-  }
-
-  const cargar =  async (event) => {
-      const newData = new FormData();
-      const data = event.target.files[0]
-      newData.append("excel",data)
-      //console.log(data)
-      const resp = await fetch('http://127.0.0.1:3333/upload',{
-          method: "POST",
-          body: newData
-      }).then(resp => resp.json())
-      console.log(resp)
-      alert(JSON.stringify(resp))
-      if(resp){
-          modificar()
-      }else{
-          return
-      }
+        if(resp){
+            alert("subido")
+            setAdap(adapter2)
+        }
+    }
 
 
-      
-            
-      
-              
-  }
-
-  return (
-      <div>
+    return(
+        <div className="center">
             <JqxGrid ref={myGrid}
-            width="20%"
-            source={adapter}
-            editable={true} selectionmode={'multiplecellsadvanced'}
-            columns={[
-            {
-                text: "First Name",
-                datafield: "firstname",
-                width: "100",
-                columntype: 'dropdownlist'
-            },
-            {
-                text: "Product Name",
-                datafield: "productname",
-                width: "100",
-                columntype: 'dropdownlist'
-            }
-            ]}
-            pageable={true}
-            autoheight={true}
-            sortable={true}
-            theme="material"
-        />
-        <div style={{ float: 'left' }}>
-                <JqxButton onClick={exportar}>Export to Excel</JqxButton>
+
+                sortable={true}  
+                filterable={true}
+                pageable={true}
+                showfilterrow={true}
+                source={adap}
+                selectionmode={'multiplecellsadvanced'}
+                editable={true}
+                columns={[{
+                    text: "name",
+                    datafield: "name",
+                    width: "290",
+                    
+                },
+                {
+                    text: "productname",
+                    datafield: "productname",
+                    width: "290",
+                    columntype: 'dropdownlist'
+                }]}
                 
+
+            >
+            </JqxGrid>
+            <div className="centerDiv">
+
+            <JqxButton style={{ marginTop: '5px' }} onClick={exportar}>Export to Excel</JqxButton>
+
+            <JqxButton style={{ marginTop: '5px' }} onClick={subir}>Subir</JqxButton>
+
+                <JqxButton style={{ marginTop: '5px' }}>
+            <input onChange={cargar} name="excel" type='file'/>
+            </JqxButton>
+
             </div>
-            <div style={{ float: 'left', marginLeft: '10px' }}>
-                        <label>Subir excel</label>
-                        <input onChange={cargar} name="excel" type='file'/>
-                        
-
-
-            </div>
-
-      </div>
-    
-  );
-};
+        </div>
+    )
+}
 
 export default MyGrid;

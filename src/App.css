@@ -1,0 +1,14 @@
+body {
+    background-image: url("https://www.kanoalvarez.cl/wp-content/uploads/2017/08/Art-wallpaper-Background-Color-7-wallpaper-1920x1200-wallpaper-...-1.jpg");
+  }
+
+.center {
+   margin: auto;
+   width: 50%;
+   padding: 10px;
+  }
+
+.centerDiv {
+    margin-left: 15%;
+    width: 50%;
+}
